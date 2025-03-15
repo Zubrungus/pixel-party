@@ -5,7 +5,7 @@ import { Canvas } from './Canvas/canvas'
 
 
 function App() {
-  const imageData: [number] = [0]
+  const imageData = new Uint8ClampedArray(40000);
 
   for (let i = 0; i < 40000; i += 4) {
     const colorValue = Math.round((i / 40000) * 255)
@@ -14,7 +14,7 @@ function App() {
     imageData[i + 2] = colorValue;
     imageData[i + 3] = 255;
   }
-
+  
   return (
     <>
       <Canvas height={100} width={100} imageData={imageData} />

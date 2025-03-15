@@ -3,7 +3,7 @@ import { useRef, useEffect } from "react";
 interface ICanvasProps {
     height: number;
     width: number;
-    imageData: [number]
+    imageData: Uint8ClampedArray<ArrayBuffer>;
 }
 
 export function Canvas(props: ICanvasProps) {
