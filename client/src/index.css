@@ -13,6 +13,40 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+#canvasWrapper{
+  width: 500px;
+  height: 500px;
+  position: relative;
+}
+
+
+
+.pixelCanvasMagnifier{
+  image-rendering: -webkit-optimize-contrast;
+  transform: scale(5);
+  position: absolute;
+  left: 200px;
+  top: 200px;
+  width: 100px;
+  height: 100px;
+}
+
+#canvasOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  z-index: 1;
+}
+
+canvas, .canvas{
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

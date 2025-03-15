@@ -1,29 +1,58 @@
 import { useRef, useEffect } from "react";
 
+//interface for props that will be received from App.tsx
 interface ICanvasProps {
     height: number;
     width: number;
     imageData: Uint8ClampedArray<ArrayBuffer>;
+    updateMouseX: (pos: number) => void;
+    updateMouseY: (pos: number) => void;
 }
 
 export function Canvas(props: ICanvasProps) {
 
-    const canvasRef = useRef(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        //@ts-expect-error 'canvas' is possibly 'null'.
-        const context = canvas.getContext!('2d');
+        //Have to make sure canvas and context have value or typescript complains
+        if (canvas) {
+            const context = canvas.getContext('2d');
+            if (context) {
 
-        const imageData = context.createImageData(100, 100);
 
-        for (let i = 0; i < 40000; i++) {
-            imageData.data[i] = props.imageData[i];
+                //Prep the imageData, which in this case will be a 100 pixel by 100 pixel image. each pixel's RGBA value is 0, 0, 0, 0 by default
+                const imageData = context.createImageData(100, 100);
+
+                //For whatever reason you can't just set imageData.data all at once, so you have to individually set each element of the array one at a time
+                for (let i = 0; i < 40000; i++) {
+                    imageData.data[i] = props.imageData[i];
+                }
+
+                //This line is what actually draws the imageData to the canvas
+                context.putImageData(imageData, 0, 0);
+
+                //Grab the position of the mouse relative to the canvas and pass the data back up to the parent
+                const handleMouseMove = (event: MouseEvent) => {
+
+                    const rect = canvas.getBoundingClientRect();
+                    const x = Math.round(event.clientX - rect.left);
+                    const y = Math.round(event.clientY - rect.top);
+
+                    props.updateMouseX(x);
+                    props.updateMouseY(y);
+                }
+
+
+                canvas.addEventListener('mousemove', handleMouseMove);
+            }
         }
-        context.putImageData(imageData, 0, 0);
 
-    }, [props.width, props.height, props.imageData])
+    }, [props]);
 
-    return <canvas ref={canvasRef} width={props.width} height={props.height} />;
+
+
+
+    return <canvas key={2} id="canvasBackground" ref={canvasRef} width={props.width} height={props.height} />;
 }
 
