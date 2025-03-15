@@ -1,8 +1,9 @@
-import {useRef, useEffect} from "react";
+import { useRef, useEffect } from "react";
 
 interface ICanvasProps {
     height: number;
     width: number;
+    imageData: [number]
 }
 
 export function Canvas(props: ICanvasProps) {
@@ -12,12 +13,16 @@ export function Canvas(props: ICanvasProps) {
     useEffect(() => {
         const canvas = canvasRef.current;
         //@ts-expect-error 'canvas' is possibly 'null'.
-        const context = canvas.getContext!('2d'); 
+        const context = canvas.getContext!('2d');
 
-        context.fillStyle = 'blue';
-        context.fillRect(0, 0, props.width, props.height)
+        const imageData = context.createImageData(100, 100);
 
-    }, [props.width, props.height])
+        for (let i = 0; i < 40000; i++) {
+            imageData.data[i] = props.imageData[i];
+        }
+        context.putImageData(imageData, 0, 0);
+
+    }, [props.width, props.height, props.imageData])
 
     return <canvas ref={canvasRef} width={props.width} height={props.height} />;
 }
