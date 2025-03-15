@@ -14,10 +14,12 @@ function App() {
     imageData[i + 2] = colorValue;
     imageData[i + 3] = 255;
   }
-  
+
   return (
     <>
-      <Canvas height={100} width={100} imageData={imageData} />
+      <div style={{ imageRendering: 'crisp-edges', transform: 'scale(5)' }}>
+        <Canvas height={100} width={100} imageData={imageData} />
+      </div>
     </>
   )
 }
