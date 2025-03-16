@@ -1,49 +1,35 @@
 import express from "express";
-import path from "node:path";
-import type { Request, Response } from "express";
-import cors from "cors";
+import { ApolloServer } from "apollo-server-express";
 import dotenv from "dotenv";
-import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
-import { typeDefs, resolvers } from "./schemas";
-import { authenticateToken } from "./utils/auth";
+import db from "./config/connection";
+import typeDefs from "./schemas/typeDefs";
+import resolvers from "./schemas/resolvers";
+import cors from "cors";
 
 dotenv.config();
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const startApolloServer = async () => {
+const startServer = async () => {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+      const token = req.headers.authorization || "";
+      return { token };
+    },
+  });
+
   await server.start();
+  server.applyMiddleware({ app });
 
-  const PORT = process.env.PORT || 3000;
-  const app = express();
-
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
-  app.use(cors());
-
-  app.use(
-    "/graphql",
-    expressMiddleware(server, {
-      context: async ({ req }) => authenticateToken(req),
-    })
-  );
-
-  if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../client/dist")));
-
-    app.get("*", (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-    });
-  }
-
-  app.listen(PORT, () => {
-    console.log(`✅ API server running on port ${PORT}!`);
-    console.log(`🚀 GraphQL available at http://localhost:${PORT}/graphql`);
+  app.listen(3000, () => {
+    console.log(
+      `🚀 Server running at http://localhost:3000${server.graphqlPath}`
+    );
   });
 };
 
-startApolloServer();
+startServer();

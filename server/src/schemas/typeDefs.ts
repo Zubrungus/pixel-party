@@ -1,12 +1,24 @@
-const typeDefs = `
-  types go here
+import { gql } from "apollo-server-express";
+
+const typeDefs = gql`
+  type User {
+    _id: ID!
+    username: String!
+    createdAt: String!
+  }
+
+  type Auth {
+    token: String!
+    user: User!
+  }
 
   type Query {
-    queries go here
+    me: User
   }
 
   type Mutation {
-    mutations go here
+    signup(username: String!, password: String!): Auth
+    login(username: String!, password: String!): Auth
   }
 `;
 

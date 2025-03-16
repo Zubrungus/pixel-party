@@ -5,6 +5,7 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
+// Check if MONGODB_URI is defined
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined in environment variables.");
 }
