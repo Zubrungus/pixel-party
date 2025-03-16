@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import './App.css'
+import './index.css'
 import { Canvas } from './Canvas/canvas'
 import { CanvasOverlay } from './Canvas/canvasOverlay';
-
-
 
 
 function App() {
