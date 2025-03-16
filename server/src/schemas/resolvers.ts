@@ -1,5 +1,9 @@
-import { User, Pixel, Cooldown } from "./models";
 import bcrypt from "bcrypt";
+import { ObjectId } from "mongoose";
+
+import User from "../models/User";
+import Pixel from "../models/Pixel";
+import Cooldown from "../models/Cooldown";
 import { signToken, AuthenticationError } from "../utils/auth";
 
 // Interfaces for User, Pixel, and Cooldown
@@ -10,7 +14,7 @@ interface IUser {
 }
 
 interface IPixel {
-  userId: string;
+  userId: ObjectId;
   x: number;
   y: number;
   color: string;
@@ -18,8 +22,12 @@ interface IPixel {
 }
 
 interface ICooldown {
-  userId: string;
+  userId: ObjectId;
   lastPlacedAt: Date;
+}
+
+interface IUserWithToken extends IUser {
+  token: string;
 }
 
 const resolvers = {
@@ -47,23 +55,24 @@ const resolvers = {
     createUser: async (
       _: any,
       { username, password }: { username: string; password: string }
-    ): Promise<IUser> => {
-      // Hash the password before saving
+    ): Promise<IUserWithToken> => {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = new User({ username, password: hashedPassword });
       await newUser.save();
-      return newUser;
+      const token = signToken(newUser); // Generate token after user creation
+      return { ...newUser.toObject(), token }; // Return token along with the user object
     },
     createPixel: async (
       _: any,
-      {
-        userId,
-        x,
-        y,
-        color,
-      }: { userId: string; x: number; y: number; color: string }
+      { x, y, color }: { x: number; y: number; color: string },
+      { user }: any
     ): Promise<IPixel> => {
-      const newPixel = new Pixel({ userId, x, y, color });
+      if (!user)
+        throw new AuthenticationError(
+          "Authentication is required to create a pixel"
+        );
+
+      const newPixel = new Pixel({ userId: user._id, x, y, color });
       await newPixel.save();
       return newPixel;
     },

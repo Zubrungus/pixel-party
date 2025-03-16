@@ -1,41 +1,57 @@
 import jwt from "jsonwebtoken";
-import { GraphQLError } from "graphql";
-import dotenv from "dotenv";
-dotenv.config();
+import { Request } from "express";
 
-export const authenticateToken = ({ req }: any) => {
-  let token = req.body.token || req.query.token || req.headers.authorization;
+import User, { IUser } from "../models/User";
 
-  if (req.headers.authorization) {
-    token = token.split(" ").pop().trim();
-  }
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || "1h";
 
+// Function to sign a token for a user
+export const signToken = (user: IUser): string => {
+  const signOptions = {
+    expiresIn: JWT_EXPIRATION,
+  };
+
+  return jwt.sign(
+    { userId: user._id, username: user.username },
+    JWT_SECRET,
+    signOptions as jwt.SignOptions
+  );
+};
+
+// Middleware to authenticate the token from the request
+export const authenticateToken = async (
+  req: Request
+): Promise<IUser | null> => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Get the token from the Authorization header
   if (!token) {
-    return req;
+    throw new AuthenticationError("Authentication token is required");
   }
 
   try {
-    const { data }: any = jwt.verify(token, process.env.JWT_SECRET_KEY || "", {
-      maxAge: "2hr",
-    });
-    req.user = data;
-  } catch (err) {
-    console.log("Invalid token");
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      username: string;
+    };
+
+    // Fetch the full user details from the database
+    const user = await User.findById(decoded.userId).exec();
+    if (!user) {
+      throw new AuthenticationError("User not found");
+    }
+
+    return user; // Return the full user object
+  } catch (error) {
+    throw new AuthenticationError("Invalid or expired token");
   }
-
-  return req;
 };
 
-export const signToken = (username: string, email: string, _id: unknown) => {
-  const payload = { username, email, _id };
-  const secretKey: any = process.env.JWT_SECRET_KEY;
-
-  return jwt.sign({ data: payload }, secretKey, { expiresIn: "2h" });
-};
-
-export class AuthenticationError extends GraphQLError {
+// Custom error class for authentication errors
+export class AuthenticationError extends Error {
   constructor(message: string) {
-    super(message, undefined, undefined, undefined, ["UNAUTHENTICATED"]);
-    Object.defineProperty(this, "name", { value: "AuthenticationError" });
+    super(message);
+    this.name = "AuthenticationError";
   }
 }
+
+export default authenticateToken;
