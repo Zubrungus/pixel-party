@@ -7,16 +7,18 @@ import { CanvasOverlay } from './Canvas/canvasOverlay';
 
 
 function App() {
-  //These lines will have errors until mouse functionality is implemented, but code still runs
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
 
-  function handleMouseX(pos: number) {
-    setMouseX(pos);
+  //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
+    const [clickX, setClickX] = useState(-1);
+    const [clickY, setClickY] = useState(-1);
+
+  //Divide by 5 and round down to get specific pixel clicked
+  function handleClickX(pos: number) {
+    setClickX(Math.floor(pos / 5));
   }
 
-  function handleMouseY(pos: number) {
-    setMouseY(pos);
+  function handleClickY(pos: number) {
+    setClickY(Math.floor(pos / 5));
   }
 
 
@@ -34,15 +36,15 @@ function App() {
 
   //Wrap both canvases in a div, so we can use css to center them both on the same area
   //The pixelCanvasMagnifier div has styling to make the canvas within it 5 times larger without smoothing or filtering the image
-  //The CanvasOverlay component draws the grid
+  //The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
     <div id="canvasWrapper" >
 
       <div className="canvas pixelCanvasMagnifier" >
-        <Canvas height={100} width={100} imageData={imageData} updateMouseX={handleMouseX} updateMouseY={handleMouseY} />
+        <Canvas height={100} width={100} imageData={imageData} />
       </div>
 
-      <CanvasOverlay height={500} width={500} />
+      <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY}/>
 
     </div>
   )

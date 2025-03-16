@@ -22,8 +22,8 @@
 
 
 .pixelCanvasMagnifier{
-  image-rendering: -webkit-optimize-contrast;
   transform: scale(5);
+  image-rendering: -webkit-optimize-contrast;
   position: absolute;
   left: 200px;
   top: 200px;

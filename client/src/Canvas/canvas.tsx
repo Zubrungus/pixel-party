@@ -5,8 +5,6 @@ interface ICanvasProps {
     height: number;
     width: number;
     imageData: Uint8ClampedArray<ArrayBuffer>;
-    updateMouseX: (pos: number) => void;
-    updateMouseY: (pos: number) => void;
 }
 
 export function Canvas(props: ICanvasProps) {
@@ -31,20 +29,6 @@ export function Canvas(props: ICanvasProps) {
 
                 //This line is what actually draws the imageData to the canvas
                 context.putImageData(imageData, 0, 0);
-
-                //Grab the position of the mouse relative to the canvas and pass the data back up to the parent
-                const handleMouseMove = (event: MouseEvent) => {
-
-                    const rect = canvas.getBoundingClientRect();
-                    const x = Math.round(event.clientX - rect.left);
-                    const y = Math.round(event.clientY - rect.top);
-
-                    props.updateMouseX(x);
-                    props.updateMouseY(y);
-                }
-
-
-                canvas.addEventListener('mousemove', handleMouseMove);
             }
         }
 
