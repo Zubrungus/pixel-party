@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongoose";
 
-import User from "../models/User";
-import Pixel from "../models/Pixel";
-import Cooldown from "../models/Cooldown";
-import { signToken, AuthenticationError } from "../utils/auth";
-import { pubsub } from "./index";
+import User from "../models/User.js";
+import Pixel from "../models/Pixel.js";
+import Cooldown from "../models/Cooldown.js";
+import { signToken, AuthenticationError } from "../utils/auth.js";
+import { pubsub } from "./index.js";
 
 // Event names
 const PIXEL_UPDATED = 'PIXEL_UPDATED';
@@ -113,7 +113,7 @@ const resolvers = {
   },
   Subscription: {
     pixelUpdated: {
-      subscribe: () => pubsub.subscribe(PIXEL_UPDATED),
+      subscribe: () => pubsub.subscribe(PIXEL_UPDATED, (message) => message),
     },
   },
 };

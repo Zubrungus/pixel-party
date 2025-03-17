@@ -2,21 +2,32 @@ import express from "express";
 import path from "node:path";
 import http from "http";
 import type { Request, Response } from "express";
-import { ApolloServer } from "@apollo/server";
+import { ApolloServer, BaseContext } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
-import { useServer } from "graphql-ws/lib/use/ws";
+import { useServer } from "graphql-ws/use/ws";
 
-import db from "./config/connection";
-import { typeDefs, resolvers } from "./schemas/index";
-import { authenticateToken } from "./utils/auth";
+import db from "./config/connection.js";
+import { typeDefs, resolvers } from "./schemas/index.js";
+// import { authenticateToken } from "./utils/auth.js";
+
+interface IUser {
+  username: string;
+  password: string;
+  createdAt: Date;
+}
+
+interface IConnectionContext extends BaseContext {
+  user?: IUser | null;
+  isSubscription?: boolean;
+}
 
 const startApolloServer = async () => {
   await db();
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3001;
   const app = express();
   const httpServer = http.createServer(app);
 
@@ -33,12 +44,12 @@ const startApolloServer = async () => {
   const serverCleanup = useServer({ 
     schema,
     // Context for WebSocket connections
-    context: async (ctx) => {
-      // You could add authentication for subscriptions here
+    context: async (/*connectionContext*/) => {
+      // Add authentication for subscriptions here
       return { 
         // For now, we're not requiring authentication for subscriptions
         isSubscription: true
-      };
+      } as IConnectionContext;
     }
   }, wsServer);
 
@@ -69,9 +80,9 @@ const startApolloServer = async () => {
   // Wrap the authenticateToken to match the context function signature
   app.use(
     "/graphql",
-    expressMiddleware(server, {
-      context: ({ req }: { req: Request }) => authenticateToken(req), // Wrap the authenticateToken
-    }) as express.RequestHandler
+    expressMiddleware(server/*, {
+      context: ({ req }: { req: Request }): any => authenticateToken(req), // Wrap the authenticateToken
+    }*/) as express.RequestHandler
   );
 
   if (process.env.NODE_ENV === "production") {
