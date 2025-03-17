@@ -5,6 +5,7 @@ import { Canvas } from './Canvas/canvas'
 import { CanvasOverlay } from './Canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
+import Header from './components/Header';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -111,21 +112,12 @@ function App() {
 
   // Divide by 5 and round down to get specific pixel clicked
   function handleClickX(pos: number) {
-    const x = Math.floor(pos / 5);
-    setClickX(x);
-    // If we have both X and Y coordinates, place a pixel
-    if (clickY !== -1) {
-      handlePlacePixel(x, clickY);
-    }
+    setClickX(Math.floor(pos / 5));
   }
 
   function handleClickY(pos: number) {
-    const y = Math.floor(pos / 5);
-    setClickY(y);
-    // If we have both X and Y coordinates, place a pixel
-    if (clickX !== -1) {
-      handlePlacePixel(clickX, y);
-    }
+    setClickY(Math.floor(pos / 5));
+    
   }
 
   function handleClickedColor(color: number) {
@@ -141,11 +133,13 @@ function App() {
   }
 
   // Handle placing a pixel via GraphQL mutation
-  const handlePlacePixel = (x: number, y: number) => {
+  // Removed until needed to make GraphQL mutation
+  // Logic to be pulled and used within confirmation button
+  /*const handlePlacePixel = (x: number, y: number) => {
     createPixel({
       variables: { x, y, color: clickedColor }
     }).catch(err => console.error("Error placing pixel:", err));
-  };
+  };*/
 
   if (loading) return <p>Loading canvas...</p>;
   if (error) return <p>Error loading canvas: {error.message}</p>;
@@ -155,6 +149,7 @@ function App() {
   // The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
     <>
+      <Header />
       <div id="canvasWrapper" >
         <div className="canvas pixelCanvasMagnifier" >
           <Canvas height={100} width={100} imageData={imageData} />
