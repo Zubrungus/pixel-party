@@ -64,8 +64,13 @@ export function CanvasOverlay(props: IOveylayProps) {
                 }
 
                 canvas.addEventListener('click', handleMouseClick)
+
+                return () => {
+                    canvas?.removeEventListener('click', handleMouseClick)
+                }
             }
         }
+        
     }, [props]);
 
     return <canvas key={1} className='canvas' id="canvasOverlay" ref={canvasRef} width={props.width} height={props.height} />;
