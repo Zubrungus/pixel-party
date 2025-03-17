@@ -2,10 +2,14 @@ import bcrypt from "bcrypt";
 import { ObjectId } from "mongoose";
 import { GraphQLContext } from "../models/GraphQlContext";
 
-import User from "../models/User";
-import Pixel from "../models/Pixel";
-import Cooldown from "../models/Cooldown";
-import { signToken, AuthenticationError } from "../utils/auth";
+import User from "../models/User.js";
+import Pixel from "../models/Pixel.js";
+import Cooldown from "../models/Cooldown.js";
+import { signToken, AuthenticationError } from "../utils/auth.js";
+import { pubsub } from "./index.js";
+
+// Event names
+const PIXEL_UPDATED = 'PIXEL_UPDATED';
 
 // Interfaces for User, Pixel, and Cooldown
 interface IUser {
@@ -45,6 +49,9 @@ const resolvers = {
     ): Promise<IPixel[]> => {
       return Pixel.find({ userId }); // Get all pixels placed by a user
     },
+    getAllPixels: async (): Promise<IPixel[]> => {
+      return Pixel.find({}); // Get all pixels in the canvas
+    },
     getCooldown: async (
       _: any,
       { userId }: { userId: string }
@@ -81,6 +88,26 @@ const resolvers = {
         userId: context.user._id, // Associate pixel with the user
       });
 
+      // Check if pixel already exists at this location
+      const existingPixel = await Pixel.findOne({ x, y });
+      let newPixel;
+      
+      if (existingPixel) {
+        // Update existing pixel
+        existingPixel.color = color;
+        existingPixel.userId = user._id;
+        existingPixel.placedAt = new Date();
+        await existingPixel.save();
+        newPixel = existingPixel;
+      } else {
+        // Create new pixel
+        newPixel = new Pixel({ userId: user._id, x, y, color });
+        await newPixel.save();
+      }
+      
+      // Publish the pixel update to all subscribers
+      pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixel });
+ 
       return newPixel;
     },
     setCooldown: async (
@@ -91,6 +118,11 @@ const resolvers = {
       const cooldown = new Cooldown({ userId, lastPlacedAt });
       await cooldown.save();
       return cooldown;
+    },
+  },
+  Subscription: {
+    pixelUpdated: {
+      subscribe: () => pubsub.subscribe(PIXEL_UPDATED, (message) => message),
     },
   },
 };

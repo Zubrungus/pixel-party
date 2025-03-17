@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request } from "express";
 
-import User, { IUser } from "../models/User";
+import User, { IUser } from "../models/User.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || "1h";
