@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
 import './index.css'
-import { Canvas } from './Canvas/canvas'
-import { CanvasOverlay } from './Canvas/canvasOverlay';
-
+import { Canvas } from './canvas/canvas'
+import { CanvasOverlay } from './canvas/canvasOverlay';
+import { ColorSelector } from './components/ColorSelector';
+import { ConfirmButton } from './components/ConfirmButton';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -47,6 +48,7 @@ function App() {
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
   const [currentColor, setCurrentColor] = useState("#FF0000"); // Default color is red
+  const [clickedColor, setClickedColor] = useState(1);
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
@@ -127,6 +129,18 @@ function App() {
     }
   }
 
+  function handleClickedColor(color: number) {
+    setClickedColor(color);
+  }
+
+  function handleConfirm() {
+    //Make sure that X and Y are not their default values
+    if (clickX >= 0 && clickY >= 0) {
+      //This is where the network request will go!
+      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
+    }
+  }
+
   // Handle placing a pixel via GraphQL mutation
   const handlePlacePixel = (x: number, y: number) => {
     createPixel({
@@ -141,30 +155,18 @@ function App() {
   // The pixelCanvasMagnifier div has styling to make the canvas within it 5 times larger without smoothing or filtering the image
   // The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
-    <div id="canvasWrapper">
-      <div className="colorPicker">
-        <label htmlFor="colorSelect">Choose color: </label>
-        <input 
-          id="colorSelect"
-          type="color" 
-          value={currentColor} 
-          onChange={(e) => setCurrentColor(e.target.value)} 
-        />
+    <>
+      <div id="canvasWrapper" >
+        <div className="canvas pixelCanvasMagnifier" >
+          <Canvas height={100} width={100} imageData={imageData} />
+        </div>
+
+        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} />
       </div>
 
-      <div className="canvas pixelCanvasMagnifier">
-        <Canvas height={100} width={100} imageData={imageData} />
-      </div>
-
-      <CanvasOverlay 
-        height={500} 
-        width={500} 
-        updateClickX={handleClickX} 
-        updateClickY={handleClickY} 
-        lastClickX={clickX} 
-        lastClickY={clickY}
-      />
-    </div>
+      <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
+      <ConfirmButton confirmHandler={handleConfirm} />
+    </>
   )
 }
 

@@ -19,7 +19,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-#canvasWrapper{
+#canvasWrapper {
   width: 500px;
   height: 500px;
   position: relative;
@@ -47,7 +47,7 @@
   background: none;
 }
 
-.pixelCanvasMagnifier{
+.pixelCanvasMagnifier {
   transform: scale(5);
   image-rendering: -webkit-optimize-contrast;
   position: absolute;
@@ -67,10 +67,45 @@
   z-index: 1;
 }
 
-canvas, .canvas{
+canvas, .canvas {
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+#ColorSelector {
+  position: fixed;
+  display: flex;
+  height: 90%;
+  width: 15%;
+  left: 1%;
+  top: 5%;
+  border: 1px solid rgb(255, 255, 255);
+  flex-wrap: wrap;
+  align-content: space-around;
+  justify-content: space-around;
+  z-index: 2;
+  background: linear-gradient(rgba(179, 255, 255, 0.8), rgba(34, 130, 255, 0.5));
+  border-radius: 25px;
+}
+
+.color {
+  min-width: 20%;
+  max-width: 45%;
+  min-height: 5%;
+  max-height: 12%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(44, 44, 44);
+  border-radius: 50%;
+  margin: 2% 7%;
+  z-index: inherit;
+}
+
+#confirmButton {
+  position: fixed;
+  bottom: 5%;
+  left: 40%;
+  right: 40%;
 }
 
 a {
@@ -122,9 +157,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
