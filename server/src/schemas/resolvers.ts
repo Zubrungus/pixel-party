@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongoose";
+import { GraphQLContext } from "../models/GraphQlContext";
 
 import User from "../models/User.js";
 import Pixel from "../models/Pixel.js";
@@ -69,15 +70,23 @@ const resolvers = {
       const token = signToken(newUser); // Generate token after user creation
       return { ...newUser.toObject(), token }; // Return token along with the user object
     },
-    createPixel: async (
-      _: any,
-      { x, y, color }: { x: number; y: number; color: string },
-      { user }: any
-    ): Promise<IPixel> => {
-      if (!user)
+    placePixel: async (
+      _parent: any,
+      { x, y, color }: any,
+      context: GraphQLContext
+    ) => {
+      if (!context.user) {
         throw new AuthenticationError(
-          "Authentication is required to create a pixel"
+          "You must be logged in to place a pixel."
         );
+      }
+
+      const newPixel = await Pixel.create({
+        x,
+        y,
+        color,
+        userId: context.user._id, // Associate pixel with the user
+      });
 
       // Check if pixel already exists at this location
       const existingPixel = await Pixel.findOne({ x, y });
@@ -98,7 +107,7 @@ const resolvers = {
       
       // Publish the pixel update to all subscribers
       pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixel });
-      
+ 
       return newPixel;
     },
     setCooldown: async (
