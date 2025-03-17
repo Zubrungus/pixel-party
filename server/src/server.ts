@@ -1,14 +1,14 @@
 import express from "express";
 import path from "node:path";
 import type { Request, Response } from "express";
+import db from "./config/connection";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
-
-import db from "./config/connection";
 import { typeDefs, resolvers } from "./schemas/index";
 import { authenticateToken } from "./utils/auth";
+import { GraphQLContext } from "./models/GraphQlContext"; // Import the GraphQLContext type
 
-const server = new ApolloServer({
+const server = new ApolloServer<GraphQLContext>({
   typeDefs,
   resolvers,
 });
@@ -23,11 +23,14 @@ const startApolloServer = async () => {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
-  // Wrap the authenticateToken to match the context function signature
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: ({ req }: { req: Request }) => authenticateToken(req), // Wrap the authenticateToken
+      context: async ({ req }: { req: Request }) => {
+        // Ensure `authenticateToken` returns the user data
+        const user = await authenticateToken(req); // Assuming this returns a promise
+        return { user }; // Return the resolved user directly
+      },
     }) as express.RequestHandler
   );
 
