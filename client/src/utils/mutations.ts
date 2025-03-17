@@ -23,3 +23,9 @@ export const SIGNUP_USER = gql`
     }
   }
 `;
+
+export const PLACE_PIXEL = gql`
+  mutation placePixel($x: Int!, $y: Int!, $color: String!) {
+    placePixel(x: $x, y: $y, color: $color)
+  }
+`;
