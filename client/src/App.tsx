@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
 import './index.css'
-import { Canvas } from './canvas/canvas'
-import { CanvasOverlay } from './canvas/canvasOverlay';
+import { Canvas } from './Canvas/canvas'
+import { CanvasOverlay } from './Canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
 // GraphQL queries and mutations
@@ -47,7 +47,6 @@ function App() {
   //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
-  const [currentColor, setCurrentColor] = useState("#FF0000"); // Default color is red
   const [clickedColor, setClickedColor] = useState(1);
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
@@ -144,7 +143,7 @@ function App() {
   // Handle placing a pixel via GraphQL mutation
   const handlePlacePixel = (x: number, y: number) => {
     createPixel({
-      variables: { x, y, color: currentColor }
+      variables: { x, y, color: clickedColor }
     }).catch(err => console.error("Error placing pixel:", err));
   };
 
