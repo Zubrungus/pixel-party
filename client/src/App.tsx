@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import './index.css'
-import { Canvas } from './Canvas/canvas'
-import { CanvasOverlay } from './Canvas/canvasOverlay';
-
+import { Canvas } from './canvas/canvas'
+import { CanvasOverlay } from './canvas/canvasOverlay';
+import { ColorSelector } from './components/ColorSelector';
+import { ConfirmButton } from './components/ConfirmButton';
 
 function App() {
 
   //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
-    const [clickX, setClickX] = useState(-1);
-    const [clickY, setClickY] = useState(-1);
+  const [clickX, setClickX] = useState(-1);
+  const [clickY, setClickY] = useState(-1);
+
+  const [clickedColor, setClickedColor] = useState(1);
 
   //Divide by 5 and round down to get specific pixel clicked
   function handleClickX(pos: number) {
@@ -19,6 +22,17 @@ function App() {
     setClickY(Math.floor(pos / 5));
   }
 
+  function handleClickedColor(color: number) {
+    setClickedColor(color);
+  }
+
+  function handleConfirm() {
+    //Make sure that X and Y are not their default values
+    if (clickX >= 0 && clickY >= 0) {
+      //This is where the network request will go!
+      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
+    }
+  }
 
   const imageData = new Uint8ClampedArray(40000);
 
@@ -36,15 +50,18 @@ function App() {
   //The pixelCanvasMagnifier div has styling to make the canvas within it 5 times larger without smoothing or filtering the image
   //The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
-    <div id="canvasWrapper" >
+    <>
+      <div id="canvasWrapper" >
+        <div className="canvas pixelCanvasMagnifier" >
+          <Canvas height={100} width={100} imageData={imageData} />
+        </div>
 
-      <div className="canvas pixelCanvasMagnifier" >
-        <Canvas height={100} width={100} imageData={imageData} />
+        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} />
       </div>
 
-      <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY}/>
-
-    </div>
+      <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
+      <ConfirmButton confirmHandler={handleConfirm} />
+    </>
   )
 }
 
