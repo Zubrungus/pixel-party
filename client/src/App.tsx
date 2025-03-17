@@ -4,6 +4,7 @@ import { Canvas } from './canvas/canvas'
 import { CanvasOverlay } from './canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
+import { ToggleGrid } from './components/ToggleGrid';
 
 function App() {
 
@@ -12,6 +13,8 @@ function App() {
   const [clickY, setClickY] = useState(-1);
 
   const [clickedColor, setClickedColor] = useState(1);
+
+  const [gridToggle, setGridToggle] = useState(false);
 
   //Divide by 5 and round down to get specific pixel clicked
   function handleClickX(pos: number) {
@@ -32,6 +35,10 @@ function App() {
       //This is where the network request will go!
       console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
     }
+  }
+
+  function handleToggleGrid(){
+    setGridToggle(!gridToggle);
   }
 
   const imageData = new Uint8ClampedArray(40000);
@@ -56,11 +63,12 @@ function App() {
           <Canvas height={100} width={100} imageData={imageData} />
         </div>
 
-        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} />
+        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
       </div>
 
       <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
       <ConfirmButton confirmHandler={handleConfirm} />
+      <ToggleGrid toggleGridHandler={handleToggleGrid} />
     </>
   )
 }
