@@ -79,6 +79,13 @@ canvas, .canvas {
   z-index: inherit;
 }
 
+#confirmButton {
+  position: fixed;
+  bottom: 5%;
+  left: 40%;
+  right: 40%;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
