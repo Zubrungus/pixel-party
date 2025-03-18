@@ -1,28 +1,126 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
 import './index.css'
-import { Canvas } from './canvas/canvas'
-import { CanvasOverlay } from './canvas/canvasOverlay';
+import { Canvas } from './Canvas/canvas'
+import { CanvasOverlay } from './Canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
 import { ToggleGrid } from './components/ToggleGrid';
+import Header from './components/Header';
+// GraphQL queries and mutations
+const GET_ALL_PIXELS = gql`
+  query GetAllPixels {
+    getAllPixels {
+      userId
+      x
+      y
+      color
+      placedAt
+    }
+  }
+`;
+
+const CREATE_PIXEL = gql`
+  mutation CreatePixel($x: Int!, $y: Int!, $color: String!) {
+    createPixel(x: $x, y: $y, color: $color) {
+      userId
+      x
+      y
+      color
+      placedAt
+    }
+  }
+`;
+
+// GraphQL subscription
+const PIXEL_UPDATED = gql`
+  subscription PixelUpdated {
+    pixelUpdated {
+      userId
+      x
+      y
+      color
+      placedAt
+    }
+  }
+`;
 
 function App() {
-
   //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
-
   const [clickedColor, setClickedColor] = useState(1);
 
   const [gridToggle, setGridToggle] = useState(false);
+  const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
-  //Divide by 5 and round down to get specific pixel clicked
+  // Query to get all pixels
+  const { loading, error, data } = useQuery(GET_ALL_PIXELS);
+  
+  // Mutation to create a pixel
+  const [createPixel] = useMutation(CREATE_PIXEL);
+  
+  // Subscription to pixel updates
+  useSubscription(PIXEL_UPDATED, {
+    onData: ({ data }) => {
+      if (data?.data?.pixelUpdated) {
+        updateCanvasWithPixel(data.data.pixelUpdated);
+      }
+    }
+  });
+
+  // Update canvas with initial pixels when data is loaded
+  useEffect(() => {
+    if (data?.getAllPixels) {
+      const newImageData = new Uint8ClampedArray(40000).fill(255);
+      
+      // Set default canvas to white
+      for (let i = 0; i < 40000; i += 4) {
+        newImageData[i] = 255;     // R
+        newImageData[i + 1] = 255; // G
+        newImageData[i + 2] = 255; // B
+        newImageData[i + 3] = 255; // A
+      }
+      
+      // Apply pixels from database
+      data.getAllPixels.forEach((pixel: any) => {
+        applyPixelToImageData(newImageData, pixel);
+      });
+      
+      setImageData(newImageData);
+    }
+  }, [data]);
+
+  // Helper function to apply a pixel to the imageData
+  const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: any) => {
+    const index = (pixel.y * 100 + pixel.x) * 4;
+    const colorHex = pixel.color.startsWith('#') ? pixel.color : `#${pixel.color}`;
+    
+    const r = parseInt(colorHex.substring(1, 3), 16);
+    const g = parseInt(colorHex.substring(3, 5), 16);
+    const b = parseInt(colorHex.substring(5, 7), 16);
+    
+    imgData[index] = r;     // R
+    imgData[index + 1] = g; // G
+    imgData[index + 2] = b; // B
+    imgData[index + 3] = 255; // A (fully opaque)
+  };
+
+  // Function to update canvas with a newly placed pixel
+  const updateCanvasWithPixel = (pixel: any) => {
+    const newImageData = new Uint8ClampedArray(imageData);
+    applyPixelToImageData(newImageData, pixel);
+    setImageData(newImageData);
+  };
+
+  // Divide by 5 and round down to get specific pixel clicked
   function handleClickX(pos: number) {
     setClickX(Math.floor(pos / 5));
   }
 
   function handleClickY(pos: number) {
     setClickY(Math.floor(pos / 5));
+    
   }
 
   function handleClickedColor(color: number) {
@@ -41,23 +139,24 @@ function App() {
     setGridToggle(!gridToggle);
   }
 
-  const imageData = new Uint8ClampedArray(40000);
+  // Handle placing a pixel via GraphQL mutation
+  // Removed until needed to make GraphQL mutation
+  // Logic to be pulled and used within confirmation button
+  /*const handlePlacePixel = (x: number, y: number) => {
+    createPixel({
+      variables: { x, y, color: clickedColor }
+    }).catch(err => console.error("Error placing pixel:", err));
+  };*/
 
-  //This is just placeholder pixel data until we have more functionality
-  //imageData will be the RGBA values of each pixel. The data is set here and then passed to the canvas as a prop
-  for (let i = 0; i < 40000; i += 4) {
-    const colorValue = Math.round((i / 40000) * 255)
-    imageData[i] = 0;
-    imageData[i + 1] = colorValue;
-    imageData[i + 2] = colorValue;
-    imageData[i + 3] = 255;
-  }
+  if (loading) return <p>Loading canvas...</p>;
+  if (error) return <p>Error loading canvas: {error.message}</p>;
 
-  //Wrap both canvases in a div, so we can use css to center them both on the same area
-  //The pixelCanvasMagnifier div has styling to make the canvas within it 5 times larger without smoothing or filtering the image
-  //The CanvasOverlay component draws the grid and the halo around the last clicked pixel
+  // Wrap both canvases in a div, so we can use css to center them both on the same area
+  // The pixelCanvasMagnifier div has styling to make the canvas within it 5 times larger without smoothing or filtering the image
+  // The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
     <>
+      <Header />
       <div id="canvasWrapper" >
         <div className="canvas pixelCanvasMagnifier" >
           <Canvas height={100} width={100} imageData={imageData} />

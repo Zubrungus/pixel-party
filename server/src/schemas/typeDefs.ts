@@ -21,6 +21,7 @@ const typeDefs = `
   type Query {
     getUser(username: String!): User
     getPixels(userId: ID!): [Pixel]
+    getAllPixels: [Pixel]
     getCooldown(userId: ID!): Cooldown
   }
 
@@ -28,6 +29,10 @@ const typeDefs = `
     createUser(username: String!, password: String!): User
     createPixel(userId: ID!, x: Int!, y: Int!, color: String!): Pixel
     setCooldown(userId: ID!): Cooldown
+  }
+
+  type Subscription {
+    pixelUpdated: Pixel
   }
 `;
 

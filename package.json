@@ -7,7 +7,7 @@
     "start": "concurrently \"cd server && npm run start\" \"cd client && npm run start\"",
     "install": "cd server && npm i && cd ../client && npm i",
     "seed": "cd server && npm run seed",
-    "build": "cd client && npm run build"
+    "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\""
   },
   "keywords": [
     "pixel",
