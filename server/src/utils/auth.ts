@@ -22,10 +22,10 @@ export const signToken = (user: IUser): string => {
 // Middleware to authenticate the token from the request
 export const authenticateToken = async (
   req: Request
-): Promise<IUser | null> => {
+) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Get the token from the Authorization header
   if (!token) {
-    throw new AuthenticationError("Authentication token is required");
+    return req;
   }
 
   try {
@@ -36,11 +36,11 @@ export const authenticateToken = async (
 
     // Fetch the full user details from the database
     const user = await User.findById(decoded.userId).exec();
-    if (!user) {
-      throw new AuthenticationError("User not found");
+    if (user) {
+      req.user = user;
     }
 
-    return user; // Return the full user object
+    return req; // Return the full user object
   } catch (error) {
     throw new AuthenticationError("Invalid or expired token");
   }

@@ -3,40 +3,18 @@ import path from "node:path";
 import http from "http";
 import type { Request, Response } from "express";
 
-import db from "./config/connection";
+import db from "./config/connection.js";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
-import { typeDefs, resolvers } from "./schemas/index";
-import { authenticateToken } from "./utils/auth";
-import { GraphQLContext } from "./models/GraphQlContext"; // Import the GraphQLContext type
+import { typeDefs, resolvers } from "./schemas/index.js";
+import { authenticateToken } from "./utils/auth.js";
 
-const server = new ApolloServer<GraphQLContext>({
-  typeDefs,
-  resolvers,
-});
 
-import { ApolloServer, BaseContext } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
+
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
-
-import db from "./config/connection.js";
-import { typeDefs, resolvers } from "./schemas/index.js";
-// import { authenticateToken } from "./utils/auth.js";
-
-interface IUser {
-  username: string;
-  password: string;
-  createdAt: Date;
-}
-
-interface IConnectionContext extends BaseContext {
-  user?: IUser | null;
-  isSubscription?: boolean;
-}
-
 
 const startApolloServer = async () => {
   await db();
@@ -63,7 +41,7 @@ const startApolloServer = async () => {
       return { 
         // For now, we're not requiring authentication for subscriptions
         isSubscription: true
-      } as IConnectionContext;
+      };
     }
   }, wsServer);
 
@@ -101,11 +79,6 @@ const startApolloServer = async () => {
         return { user }; // Return the resolved user directly
       },
     }) as express.RequestHandler
-
-    expressMiddleware(server/*, {
-      context: ({ req }: { req: Request }): any => authenticateToken(req), // Wrap the authenticateToken
-    }*/) as express.RequestHandler
-
   );
 
   if (process.env.NODE_ENV === "production") {

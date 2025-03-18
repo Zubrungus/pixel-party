@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 // Interface for Pixel document
 interface IPixel extends Document {
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: mongoose.Schema.Types.ObjectId | string;
   x: number;
   y: number;
   color: string;
