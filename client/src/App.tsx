@@ -5,6 +5,7 @@ import { Canvas } from './Canvas/canvas'
 import { CanvasOverlay } from './Canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
+import { ToggleGrid } from './components/ToggleGrid';
 import Header from './components/Header';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
@@ -49,6 +50,8 @@ function App() {
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
   const [clickedColor, setClickedColor] = useState(1);
+
+  const [gridToggle, setGridToggle] = useState(false);
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
@@ -132,6 +135,10 @@ function App() {
     }
   }
 
+  function handleToggleGrid(){
+    setGridToggle(!gridToggle);
+  }
+
   // Handle placing a pixel via GraphQL mutation
   // Removed until needed to make GraphQL mutation
   // Logic to be pulled and used within confirmation button
@@ -155,11 +162,12 @@ function App() {
           <Canvas height={100} width={100} imageData={imageData} />
         </div>
 
-        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} />
+        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
       </div>
 
       <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
       <ConfirmButton confirmHandler={handleConfirm} />
+      <ToggleGrid toggleGridHandler={handleToggleGrid} />
     </>
   )
 }
