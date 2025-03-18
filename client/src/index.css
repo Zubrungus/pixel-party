@@ -110,6 +110,29 @@ canvas,
   z-index: 2;
 }
 
+#zoomButtons{
+  color: black;
+  position: fixed;
+  display: flex;
+  align-content: space-around;
+  justify-content: space-around;
+  height: 40%;
+  width: 10%;
+  right: 1%;
+  bottom: 30%;
+  border: 1px solid rgb(255, 255, 255);
+  border-radius: 25px;
+  background: linear-gradient(rgba(179, 255, 255, 0.8), rgba(34, 130, 255, 0.5));
+  z-index: 2;
+}
+
+#zoomButtons div{
+  border: 1px solid rgb(0, 0, 0);
+  border-radius: 50%;
+  width: 90%;
+  height: 45%;
+}
+
 #toggleButton {
   color: black;
   position: fixed;
@@ -118,9 +141,9 @@ canvas,
   right: 1%;
   bottom: 5%;
   border: 1px solid rgb(255, 255, 255);
+  border-radius: 25px;
   background: linear-gradient(rgba(179, 255, 255, 0.8), rgba(34, 130, 255, 0.5));
   z-index: 2;
-  border-radius: 25px;
 }
 
 #toggleButton p:nth-child(2){
