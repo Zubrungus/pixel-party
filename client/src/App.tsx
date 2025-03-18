@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
+import { useQuery, useSubscription, gql } from '@apollo/client'
 import './index.css'
 import { Canvas } from './canvas/canvas'
 import { CanvasOverlay } from './canvas/canvasOverlay';
@@ -21,7 +21,7 @@ const GET_ALL_PIXELS = gql`
   }
 `;
 
-const CREATE_PIXEL = gql`
+/* const CREATE_PIXEL = gql`
   mutation CreatePixel($x: Int!, $y: Int!, $color: String!) {
     createPixel(x: $x, y: $y, color: $color) {
       userId
@@ -31,7 +31,7 @@ const CREATE_PIXEL = gql`
       placedAt
     }
   }
-`;
+`; */
 
 // GraphQL subscription
 const PIXEL_UPDATED = gql`
@@ -46,6 +46,14 @@ const PIXEL_UPDATED = gql`
   }
 `;
 
+interface Pixel {
+  userId: string;
+  x: number;
+  y: number;
+  color: string;
+  placedAt: string;
+}
+
 function App() {
   //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
   const [clickX, setClickX] = useState(-1);
@@ -53,13 +61,16 @@ function App() {
   const [clickedColor, setClickedColor] = useState(1);
   const [gridToggle, setGridToggle] = useState(false);
 const [scaleLevel, setScaleLevel] = useState(1);
+//will be used for dragging functionality
+/*const [mouseDownX, setMouseDownX] = useState(0);
+const [mouseDownY, setMouseDownY] = useState(0);*/
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
   const { loading, error, data } = useQuery(GET_ALL_PIXELS);
   
   // Mutation to create a pixel
-  const [createPixel] = useMutation(CREATE_PIXEL);
+  //const [createPixel] = useMutation(CREATE_PIXEL);
   
   // Subscription to pixel updates
   useSubscription(PIXEL_UPDATED, {
@@ -76,15 +87,15 @@ const [scaleLevel, setScaleLevel] = useState(1);
       const newImageData = new Uint8ClampedArray(40000).fill(255);
       
       // Set default canvas to white
-      for (let i = 0; i < 40000; i += 4) {
+      data.getAllPixels.forEach((_pixel: Pixel, i: number) => {
         newImageData[i] = 255;     // R
         newImageData[i + 1] = 255; // G
         newImageData[i + 2] = 255; // B
         newImageData[i + 3] = 255; // A
-      }
+      })
       
       // Apply pixels from database
-      data.getAllPixels.forEach((pixel: any) => {
+      data.getAllPixels.forEach((pixel: Pixel) => {
         applyPixelToImageData(newImageData, pixel);
       });
       
@@ -93,7 +104,7 @@ const [scaleLevel, setScaleLevel] = useState(1);
   }, [data]);
 
   // Helper function to apply a pixel to the imageData
-  const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: any) => {
+  const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: Pixel) => {
     const index = (pixel.y * 100 + pixel.x) * 4;
     const colorHex = pixel.color.startsWith('#') ? pixel.color : `#${pixel.color}`;
     
@@ -108,7 +119,7 @@ const [scaleLevel, setScaleLevel] = useState(1);
   };
 
   // Function to update canvas with a newly placed pixel
-  const updateCanvasWithPixel = (pixel: any) => {
+  const updateCanvasWithPixel = (pixel: Pixel) => {
     const newImageData = new Uint8ClampedArray(imageData);
     applyPixelToImageData(newImageData, pixel);
     setImageData(newImageData);

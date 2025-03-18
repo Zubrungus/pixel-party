@@ -1,4 +1,4 @@
-import Auth from '../utils/auth.js';
+import { isAuthenticated } from '../utils/auth.js';
 
 const Header = () => {
     return (
@@ -6,7 +6,7 @@ const Header = () => {
             <div className="">
                 <h1>Pixel Party</h1>
                 <div>
-                    {Auth.loggedIn() ? (
+                    {isAuthenticated() ? (
                         <button>Log Out</button>
                     ) : (
                         <>

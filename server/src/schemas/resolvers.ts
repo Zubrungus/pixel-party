@@ -70,7 +70,7 @@ const resolvers = {
       const token = signToken(newUser); // Generate token after user creation
       return { ...newUser.toObject(), token }; // Return token along with the user object
     },
-    placePixel: async (
+    createPixel: async (
       _parent: any,
       { x, y, color }: any,
       context: GraphQLContext
@@ -87,26 +87,27 @@ const resolvers = {
         color,
         userId: context.user._id, // Associate pixel with the user
       });
-
+      const existingUser = await User.findOne({_id: context.user._id});
       // Check if pixel already exists at this location
       const existingPixel = await Pixel.findOne({ x, y });
-      let newPixel;
+      let newPixelToSend;
       
-      if (existingPixel) {
+      
+      if (existingPixel && existingUser) {
         // Update existing pixel
         existingPixel.color = color;
-        existingPixel.userId = user._id;
+        existingPixel.userId = existingUser?._id;
         existingPixel.placedAt = new Date();
         await existingPixel.save();
-        newPixel = existingPixel;
+        newPixelToSend = existingPixel;
       } else {
         // Create new pixel
-        newPixel = new Pixel({ userId: user._id, x, y, color });
+        newPixelToSend = new Pixel({ userId: context.user._id, x, y, color });
         await newPixel.save();
       }
       
       // Publish the pixel update to all subscribers
-      pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixel });
+      pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixelToSend });
  
       return newPixel;
     },
