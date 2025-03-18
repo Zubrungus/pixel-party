@@ -15,6 +15,6 @@ export function Color(props: IColorProps) {
     if (props.clickedColor == props.index) {
         return <div onClick={handleClick} className="color" style={{ backgroundColor: `rgb(${props.bgColor})`, border: `3px solid rgb(255, 187, 0)`, margin: 'calc(2% - 2px) calc(7% - 2px)' }} />
     } else {
-        return  <div onClick={handleClick} className="color" style={{ backgroundColor: `rgb(${props.bgColor})`, border: `1px solid rgb(44, 44, 44)`, margin: '2% 7%' }} />
+        return <div onClick={handleClick} className="color" style={{ backgroundColor: `rgb(${props.bgColor})`, border: `1px solid rgb(44, 44, 44)`, margin: '2% 7%' }} />
     }
 }

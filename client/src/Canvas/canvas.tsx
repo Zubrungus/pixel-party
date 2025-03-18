@@ -17,12 +17,13 @@ export function Canvas(props: ICanvasProps) {
         if (canvas) {
             const context = canvas.getContext('2d');
             if (context) {
-
+                //Clear the canvas each time before it is redrawn
+                context.clearRect(0, 0, canvas.width, canvas.height);
 
                 //Prep the imageData, which in this case will be a 100 pixel by 100 pixel image. each pixel's RGBA value is 0, 0, 0, 0 by default
                 const imageData = context.createImageData(100, 100);
 
-                //For whatever reason you can't just set imageData.data all at once, so you have to individually set each element of the array one at a time
+                //For whatever reason you can't just set imageData.data all at once, so you have to individually set each element of the array
                 for (let i = 0; i < 40000; i++) {
                     imageData.data[i] = props.imageData[i];
                 }

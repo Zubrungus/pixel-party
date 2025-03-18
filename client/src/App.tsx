@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
 import './index.css'
-import { Canvas } from './Canvas/canvas'
-import { CanvasOverlay } from './Canvas/canvasOverlay';
+import { Canvas } from './canvas/canvas'
+import { CanvasOverlay } from './canvas/canvasOverlay';
 import { ColorSelector } from './components/ColorSelector';
 import { ConfirmButton } from './components/ConfirmButton';
 import { ToggleGrid } from './components/ToggleGrid';
 import Header from './components/Header';
+import { ZoomButtons } from './components/ZoomButtons';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -50,8 +51,8 @@ function App() {
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
   const [clickedColor, setClickedColor] = useState(1);
-
   const [gridToggle, setGridToggle] = useState(false);
+const [scaleLevel, setScaleLevel] = useState(1);
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
@@ -115,11 +116,11 @@ function App() {
 
   // Divide by 5 and round down to get specific pixel clicked
   function handleClickX(pos: number) {
-    setClickX(Math.floor(pos / 5));
+    setClickX(Math.floor((pos / 5) / scaleLevel));
   }
 
   function handleClickY(pos: number) {
-    setClickY(Math.floor(pos / 5));
+    setClickY(Math.floor((pos / 5) / scaleLevel));
     
   }
 
@@ -137,6 +138,16 @@ function App() {
 
   function handleToggleGrid(){
     setGridToggle(!gridToggle);
+  }
+
+  function handleZoomIncrease(){
+    setScaleLevel(scaleLevel + 1)
+  }
+
+  function handleZoomDecrease(){
+    if(scaleLevel >= 2){
+      setScaleLevel(scaleLevel - 1);
+    }
   }
 
   // Handle placing a pixel via GraphQL mutation
@@ -157,7 +168,8 @@ function App() {
   return (
     <>
       <Header />
-      <div id="canvasWrapper" >
+
+      <div id="canvasWrapper" style={{transform: `${scaleLevel}`, imageRendering: `-webkit-optimize-contrast`}} >
         <div className="canvas pixelCanvasMagnifier" >
           <Canvas height={100} width={100} imageData={imageData} />
         </div>
@@ -167,6 +179,7 @@ function App() {
 
       <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
       <ConfirmButton confirmHandler={handleConfirm} />
+      <ZoomButtons increaseZoomHandler={handleZoomIncrease} decreaseZoomHandler={handleZoomDecrease} />
       <ToggleGrid toggleGridHandler={handleToggleGrid} />
     </>
   )

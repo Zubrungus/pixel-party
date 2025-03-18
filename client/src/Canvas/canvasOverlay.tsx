@@ -47,7 +47,7 @@ export function CanvasOverlay(props: IOveylayProps) {
                 //Make sure both props are above the default value of -1
                 if (props.lastClickX >= 0 && props.lastClickY >= 0) {
 
-                    //multiply by 5, since props
+                    //Multiply by 5, since received props are non-magnified
                     const fullX = props.lastClickX * 5;
                     const fullY = props.lastClickY * 5;
 
