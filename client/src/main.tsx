@@ -21,8 +21,8 @@ if (loc.protocol === "https:") {
 } else {
     new_uri = "ws:";
 }
-new_uri += "//" + loc.host;
-new_uri += loc.pathname + "graphql";
+new_uri += "//" + loc.host + "/graphql";
+
 
 // Create an HTTP link for queries and mutations
 const httpLink = new HttpLink({
