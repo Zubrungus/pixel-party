@@ -86,9 +86,13 @@ function App() {
   useSubscription(PIXEL_UPDATED, {
     onData: ({ data }) => {
       if (data?.data?.pixelUpdated) {
+        console.log('Received pixel update via subscription:', data.data.pixelUpdated);
         updateCanvasWithPixel(data.data.pixelUpdated);
       }
     },
+    onError: (error) => {
+      console.error('Subscription error:', error);
+    }
   });
 
   // Update canvas with initial pixels when data is loaded
@@ -212,8 +216,16 @@ function App() {
 
   // Function to update canvas with a newly placed pixel
   const updateCanvasWithPixel = (pixel: Pixel) => {
-    const newImageData = new Uint8ClampedArray(imageData);
+    console.log('Updating canvas with pixel:', pixel);
+    // Create a proper copy of the current imageData
+    const newImageData = new Uint8ClampedArray(40000);
+    // Copy all existing data
+    for (let i = 0; i < imageData.length; i++) {
+      newImageData[i] = imageData[i];
+    }
+    // Apply the new pixel
     applyPixelToImageData(newImageData, pixel);
+    // Update state with new image data
     setImageData(newImageData);
   };
 
@@ -252,8 +264,23 @@ function App() {
 
   function handleConfirm() {
     const user = getUser();
+    console.log('This is the user:', user);
     //Make sure that X and Y are not their default values
     if (clickX >= 0 && clickY >= 0 && user) {
+      console.log(`Placing pixel: X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
+      
+      // Optimistically update the UI immediately
+      const optimisticPixel: Pixel = {
+        userId: user.userId,
+        x: clickX,
+        y: clickY,
+        color: clickedColor.toString(),
+        placedAt: new Date().toISOString()
+      };
+      
+      // Update the canvas immediately, don't wait for subscription
+      updateCanvasWithPixel(optimisticPixel);
+      
       createPixel({
         variables: { x: clickX, y: clickY, color: clickedColor.toString() },
       })
@@ -270,7 +297,6 @@ function App() {
             alert("You must be logged in to place a pixel.");
           }
         });
-      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
     } else if (!user) {
       alert("You must be logged in to place a pixel.");
     }
