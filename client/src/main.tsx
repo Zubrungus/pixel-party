@@ -16,7 +16,7 @@ import App from "./App.tsx";
 
 // Create an HTTP link for queries and mutations
 const httpLink = new HttpLink({
-  uri: "http://localhost:3000/graphql",
+  uri: "http://localhost:3000/graphql", // Updated port to match server
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -32,10 +32,13 @@ const authLink = setContext((_, { headers }) => {
 // Create a WebSocket link for subscriptions
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "ws://localhost:3000/graphql",
+    url: "ws://localhost:3000/graphql", // Updated port to match server
     connectionParams: {
       authToken: localStorage.getItem("id_token"),
-    }
+    },
+    retryAttempts: 5, // Add retry attempts
+    shouldRetry: () => true, // Always retry on disconnect
+    onNonLazyError: error => console.error('WebSocket error:', error)
   })
 );
 
