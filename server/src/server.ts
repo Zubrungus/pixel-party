@@ -2,19 +2,20 @@ import express from "express";
 import path from "node:path";
 import http from "http";
 import type { Request, Response } from "express";
-
 import db from "./config/connection.js";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { typeDefs, resolvers } from "./schemas/index.js";
 import { authenticateToken } from "./utils/auth.js";
-
-
-
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const startApolloServer = async () => {
   await db();
