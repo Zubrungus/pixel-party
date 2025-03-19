@@ -108,11 +108,60 @@ function App() {
   // Helper function to apply a pixel to the imageData
   const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: Pixel) => {
     const index = (pixel.y * 100 + pixel.x) * 4;
-    const colorHex = pixel.color.startsWith('#') ? pixel.color : `#${pixel.color}`;
+    
+    let r: number = 255, g: number = 255, b: number = 255;
 
-    const r = parseInt(colorHex.substring(1, 3), 16);
-    const g = parseInt(colorHex.substring(3, 5), 16);
-    const b = parseInt(colorHex.substring(5, 7), 16);
+    switch(pixel.color){
+      case "1":
+        r= 179; g= 41; b= 41;
+        break;
+      case "2":
+        r= 67; g= 56; b= 214;
+        break;
+      case "3":
+        r= 223; g= 119; b= 22;
+        break;
+      case "4":
+        r= 56; g= 129; b= 224;
+        break;
+      case "5":
+        r= 232; g= 204; b= 23;
+        break;
+      case "6":
+        r= 117; g= 225; b= 225;
+        break;
+      case "7":
+        r= 37; g= 131; b= 40;
+        break;
+      case "8":
+        r= 101; g= 199; b= 56;
+        break;
+      case "9":
+        r= 213; g= 77; b= 177;
+        break;
+      case "10":
+        r= 211; g= 150; b= 175;
+        break;
+      case "11":
+        r= 120; g= 86; b= 59;
+        break;
+      case "12":
+        r= 179; g= 136; b= 101;
+        break;
+      case "13":
+        r= 89; g= 89; b= 89;
+        break;
+      case "14":
+        r= 147; g= 147; b= 154;
+        break;
+      case "15":
+        r= 0; g= 0; b= 0;
+        break;
+      case "16":
+        r= 255; g= 255; b= 255;
+        break;
+      
+    }
 
     imgData[index] = r;     // R
     imgData[index + 1] = g; // G
