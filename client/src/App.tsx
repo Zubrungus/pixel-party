@@ -8,6 +8,7 @@ import { ConfirmButton } from './components/ConfirmButton';
 import { ToggleGrid } from './components/ToggleGrid';
 import Header from './components/Header';
 import { ZoomButtons } from './components/ZoomButtons';
+import { getUser } from './utils/auth';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -216,12 +217,28 @@ function App() {
   }
 
   function handleConfirm() {
+    const user = getUser();
     //Make sure that X and Y are not their default values
-    if (clickX >= 0 && clickY >= 0) {
+    if (clickX >= 0 && clickY >= 0 && user) {
       createPixel({
-        variables: { x: clickX, y:  clickY, color: clickedColor.toString() }
-      }).catch(err => console.error("Error placing pixel:", err));
-      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
+        variables: { x: clickX, y: clickY, color: clickedColor.toString() }
+      })
+        .then(response => {
+          console.log("Pixel created successfully:", response);
+          // Reset click position after successful pixel placement
+          setClickX(-1);
+          setClickY(-1);
+        })
+        .catch(err => {
+          console.error("Error placing pixel:", err);
+          // Display error to user if authentication fails
+          if (err.message.includes("logged in")) {
+            alert("You must be logged in to place a pixel.");
+          }
+        });
+      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
+    } else if (!user) {
+      alert("You must be logged in to place a pixel.");
     }
   }
 

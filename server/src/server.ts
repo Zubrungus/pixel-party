@@ -74,9 +74,14 @@ const startApolloServer = async () => {
 
     expressMiddleware(server, {
       context: async ({ req }: { req: Request }) => {
-        // Ensure `authenticateToken` returns the user data
-        const user = await authenticateToken(req); // Assuming this returns a promise
-        return { user }; // Return the resolved user directly
+        // Get authenticated user from token
+        try {
+          const user = await authenticateToken(req);
+          return { user }; // User will be null if not authenticated
+        } catch (error) {
+          console.error("Authentication error:", error);
+          return { user: null }; // Ensure user is null on error
+        }
       },
     }) as express.RequestHandler
   );
