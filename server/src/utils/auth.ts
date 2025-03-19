@@ -23,7 +23,7 @@ export const signToken = (user: IUser): string => {
 export const authenticateToken = async (
   req: Request
 ) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Get the token from the Authorization header
+  const token = req.headers.authorization?.split(" ")[1]; // Get the token from the Authorization header
   if (!token) {
     return null; // Return null if no token
   }
@@ -35,7 +35,7 @@ export const authenticateToken = async (
     };
 
     // Fetch the full user details from the database
-    const user = await User.findById(decoded.userId).exec();
+    const user = await User.findById(decoded.userId);
     if (!user) {
       return null; // Return null if user not found
     }

@@ -30,10 +30,11 @@ export function Canvas(props: ICanvasProps) {
 
                 //This line is what actually draws the imageData to the canvas
                 context.putImageData(imageData, 0, 0);
+                console.log('Canvas redrawn with updated image data');
             }
         }
 
-    }, [props]);
+    }, [props.imageData]); // Explicitly depend on imageData to ensure updates
 
 
 

@@ -37,13 +37,22 @@ const startApolloServer = async () => {
   const serverCleanup = useServer({ 
     schema,
     // Context for WebSocket connections
-    context: async (/*connectionContext*/) => {
-      // Add authentication for subscriptions here
+    context: async (_connectionContext) => {
+      // Log connection for debugging
+      console.log('WebSocket connection established');
+      
+      // For now, we're not requiring authentication for subscriptions
       return { 
-        // For now, we're not requiring authentication for subscriptions
         isSubscription: true
       };
-    }
+    },
+    onConnect: (_ctx) => {
+      console.log('Client connected to WebSocket');
+      return true;
+    },
+    onDisconnect: (_ctx) => {
+      console.log('Client disconnected from WebSocket');
+    },
   }, wsServer);
 
   // Create Apollo Server with WebSocket plugin

@@ -128,6 +128,7 @@ const resolvers = {
         existingPixel.placedAt = new Date();
         await existingPixel.save();
         
+        console.log('Publishing pixel update to subscribers (existing pixel):', existingPixel);
         // Publish the pixel update to all subscribers
         pubsub.publish(PIXEL_UPDATED, { pixelUpdated: existingPixel });
         
@@ -143,6 +144,7 @@ const resolvers = {
         
         await newPixel.save();
         
+        console.log('Publishing pixel update to subscribers (new pixel):', newPixel);
         // Publish the pixel update to all subscribers
         pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixel });
         
@@ -162,7 +164,13 @@ const resolvers = {
   },
   Subscription: {
     pixelUpdated: {
-      subscribe: () => pubsub.subscribe(PIXEL_UPDATED, (message) => message),
+      subscribe: () => {
+        console.log('New client subscribed to pixelUpdated');
+        return pubsub.subscribe(PIXEL_UPDATED, (message) => {
+          console.log('Sending subscription message:', message);
+          return message;
+        });
+      },
     },
   },
 };
