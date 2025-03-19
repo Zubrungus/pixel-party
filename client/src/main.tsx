@@ -14,9 +14,19 @@ import { setContext } from "@apollo/client/link/context";
 import "./index.css";
 import App from "./App.tsx";
 
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+    new_uri = "wss:";
+} else {
+    new_uri = "ws:";
+}
+new_uri += "//" + loc.host;
+new_uri += loc.pathname + "/graphql";
+
 // Create an HTTP link for queries and mutations
 const httpLink = new HttpLink({
-  uri: "http://localhost:3000/graphql", // Updated port to match server
+  uri: "/graphql", // Updated port to match server
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -32,7 +42,7 @@ const authLink = setContext((_, { headers }) => {
 // Create a WebSocket link for subscriptions
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "ws://localhost:3000/graphql", // Updated port to match server
+    url: new_uri, // Updated port to match server
     connectionParams: {
       authToken: localStorage.getItem("id_token"),
     },
