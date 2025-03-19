@@ -1,21 +1,48 @@
-import { isAuthenticated } from '../utils/auth.js';
+import { useState } from 'react';
+import { isAuthenticated, removeToken, getUser } from '../utils/auth.js';
+import LoginModal from './LoginModal';
+import SignupModal from './SignupModal';
 
 const Header = () => {
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showSignupModal, setShowSignupModal] = useState(false);
+    
+    const user = getUser();
+    
+    const handleLogout = () => {
+        removeToken();
+        window.location.reload();
+    };
+
     return (
         <header>
-            <div className="">
+            <div className="header-content">
                 <h1>Pixel Party</h1>
                 <div>
                     {isAuthenticated() ? (
-                        <button>Log Out</button>
+                        <div className="user-info">
+                            <span className="username">Welcome, {user?.username}</span>
+                            <button onClick={handleLogout}>Log Out</button>
+                        </div>
                     ) : (
                         <>
-                            <button>Log In</button>
-                            <button>Sign Up</button>
+                            <button onClick={() => setShowLoginModal(true)}>Log In</button>
+                            <button onClick={() => setShowSignupModal(true)}>Sign Up</button>
                         </>
                     )}
                 </div>
             </div>
+            
+            {/* Modals */}
+            <LoginModal 
+                isOpen={showLoginModal} 
+                onClose={() => setShowLoginModal(false)} 
+            />
+            
+            <SignupModal 
+                isOpen={showSignupModal} 
+                onClose={() => setShowSignupModal(false)} 
+            />
         </header>
     );
 };

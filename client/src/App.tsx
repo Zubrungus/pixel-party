@@ -248,20 +248,22 @@ function App() {
   return (
     <>
       <Header />
-
-      <div id="draggableWrapper" style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
-        <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
-          <div className="canvas pixelCanvasMagnifier" >
-            <Canvas height={100} width={100} imageData={imageData} />
+      
+      <div style={{ marginTop: '80px' }}> {/* Add margin to account for fixed header */}
+        <div id="draggableWrapper" style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
+          <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
+            <div className="canvas pixelCanvasMagnifier" >
+              <Canvas height={100} width={100} imageData={imageData} />
+            </div>
+            <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
           </div>
-          <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
         </div>
-      </div>
 
-      <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
-      <ConfirmButton confirmHandler={handleConfirm} />
-      <ZoomButtons increaseZoomHandler={handleZoomIncrease} decreaseZoomHandler={handleZoomDecrease} />
-      <ToggleGrid toggleGridHandler={handleToggleGrid} />
+        <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
+        <ConfirmButton confirmHandler={handleConfirm} />
+        <ZoomButtons increaseZoomHandler={handleZoomIncrease} decreaseZoomHandler={handleZoomDecrease} />
+        <ToggleGrid toggleGridHandler={handleToggleGrid} />
+      </div>
     </>
   )
 }
