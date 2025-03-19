@@ -1,8 +1,14 @@
 const typeDefs = `
   type User {
+    _id: ID!
     username: String!
     password: String!
     createdAt: String!
+  }
+
+  type Auth {
+    token: String!
+    user: User!
   }
 
   type Pixel {
@@ -26,8 +32,9 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(username: String!, password: String!): User
-    createPixel(userId: ID!, x: Int!, y: Int!, color: String!): Pixel
+    login(username: String!, password: String!): Auth
+    signup(username: String!, password: String!): Auth
+    createPixel(x: Int!, y: Int!, color: String!): Pixel
     setCooldown(userId: ID!): Cooldown
   }
 

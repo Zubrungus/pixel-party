@@ -8,6 +8,7 @@ import { ConfirmButton } from './components/ConfirmButton';
 import { ToggleGrid } from './components/ToggleGrid';
 import Header from './components/Header';
 import { ZoomButtons } from './components/ZoomButtons';
+import { getUser } from './utils/auth';
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -216,12 +217,28 @@ function App() {
   }
 
   function handleConfirm() {
+    const user = getUser();
     //Make sure that X and Y are not their default values
-    if (clickX >= 0 && clickY >= 0) {
+    if (clickX >= 0 && clickY >= 0 && user) {
       createPixel({
-        variables: { x: clickX, y:  clickY, color: clickedColor.toString() }
-      }).catch(err => console.error("Error placing pixel:", err));
-      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
+        variables: { x: clickX, y: clickY, color: clickedColor.toString() }
+      })
+        .then(response => {
+          console.log("Pixel created successfully:", response);
+          // Reset click position after successful pixel placement
+          setClickX(-1);
+          setClickY(-1);
+        })
+        .catch(err => {
+          console.error("Error placing pixel:", err);
+          // Display error to user if authentication fails
+          if (err.message.includes("logged in")) {
+            alert("You must be logged in to place a pixel.");
+          }
+        });
+      console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
+    } else if (!user) {
+      alert("You must be logged in to place a pixel.");
     }
   }
 
@@ -248,20 +265,22 @@ function App() {
   return (
     <>
       <Header />
-
-      <div id="draggableWrapper" style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
-        <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
-          <div className="canvas pixelCanvasMagnifier" >
-            <Canvas height={100} width={100} imageData={imageData} />
+      
+      <div style={{ marginTop: '80px' }}> {/* Add margin to account for fixed header */}
+        <div id="draggableWrapper" style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
+          <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
+            <div className="canvas pixelCanvasMagnifier" >
+              <Canvas height={100} width={100} imageData={imageData} />
+            </div>
+            <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
           </div>
-          <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
         </div>
-      </div>
 
-      <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
-      <ConfirmButton confirmHandler={handleConfirm} />
-      <ZoomButtons increaseZoomHandler={handleZoomIncrease} decreaseZoomHandler={handleZoomDecrease} />
-      <ToggleGrid toggleGridHandler={handleToggleGrid} />
+        <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
+        <ConfirmButton confirmHandler={handleConfirm} />
+        <ZoomButtons increaseZoomHandler={handleZoomIncrease} decreaseZoomHandler={handleZoomDecrease} />
+        <ToggleGrid toggleGridHandler={handleToggleGrid} />
+      </div>
     </>
   )
 }

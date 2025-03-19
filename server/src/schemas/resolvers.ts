@@ -13,6 +13,7 @@ const PIXEL_UPDATED = 'PIXEL_UPDATED';
 
 // Interfaces for User, Pixel, and Cooldown
 interface IUser {
+  _id: string | ObjectId;
   username: string;
   password: string;
   createdAt: Date;
@@ -31,8 +32,9 @@ interface ICooldown {
   lastPlacedAt: Date;
 }
 
-interface IUserWithToken extends IUser {
+interface AuthResponse {
   token: string;
+  user: IUser;
 }
 
 const resolvers = {
@@ -60,56 +62,93 @@ const resolvers = {
     },
   },
   Mutation: {
-    createUser: async (
+    signup: async (
       _: any,
       { username, password }: { username: string; password: string }
-    ): Promise<IUserWithToken> => {
+    ): Promise<AuthResponse> => {
+      // Check if username already exists
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        throw new Error("Username already exists");
+      }
+      
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = new User({ username, password: hashedPassword });
       await newUser.save();
       const token = signToken(newUser); // Generate token after user creation
-      return { ...newUser.toObject(), token }; // Return token along with the user object
+      
+      return { 
+        token,
+        user: newUser
+      };
+    },
+    login: async (
+      _: any,
+      { username, password }: { username: string; password: string }
+    ): Promise<AuthResponse> => {
+      // Find user by username
+      const user = await User.findOne({ username });
+      if (!user) {
+        throw new AuthenticationError("Invalid username or password");
+      }
+      
+      // Check password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        throw new AuthenticationError("Invalid username or password");
+      }
+      
+      // Generate token
+      const token = signToken(user);
+      
+      return {
+        token,
+        user
+      };
     },
     createPixel: async (
       _parent: any,
       { x, y, color }: any,
       context: GraphQLContext
     ) => {
+      // Check for authenticated user
       if (!context.user) {
         throw new AuthenticationError(
           "You must be logged in to place a pixel."
         );
       }
 
-      const newPixel = await Pixel.create({
-        x,
-        y,
-        color,
-        userId: context.user._id, // Associate pixel with the user
-      });
-      const existingUser = await User.findOne({_id: context.user._id});
       // Check if pixel already exists at this location
       const existingPixel = await Pixel.findOne({ x, y });
-      let newPixelToSend;
       
-      
-      if (existingPixel && existingUser) {
+      if (existingPixel) {
         // Update existing pixel
         existingPixel.color = color;
-        existingPixel.userId = existingUser?._id;
+        existingPixel.userId = context.user._id;
         existingPixel.placedAt = new Date();
         await existingPixel.save();
-        newPixelToSend = existingPixel;
+        
+        // Publish the pixel update to all subscribers
+        pubsub.publish(PIXEL_UPDATED, { pixelUpdated: existingPixel });
+        
+        return existingPixel;
       } else {
         // Create new pixel
-        newPixelToSend = new Pixel({ userId: context.user._id, x, y, color });
+        const newPixel = new Pixel({ 
+          x, 
+          y, 
+          color, 
+          userId: context.user._id 
+        });
+        
         await newPixel.save();
+        
+        // Publish the pixel update to all subscribers
+        pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixel });
+        
+        return newPixel;
       }
       
-      // Publish the pixel update to all subscribers
-      pubsub.publish(PIXEL_UPDATED, { pixelUpdated: newPixelToSend });
- 
-      return newPixel;
     },
     setCooldown: async (
       _: any,

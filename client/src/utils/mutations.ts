@@ -24,8 +24,14 @@ export const SIGNUP_USER = gql`
   }
 `;
 
-export const PLACE_PIXEL = gql`
-  mutation placePixel($x: Int!, $y: Int!, $color: String!) {
-    placePixel(x: $x, y: $y, color: $color)
+export const CREATE_PIXEL = gql`
+  mutation createPixel($x: Int!, $y: Int!, $color: String!) {
+    createPixel(x: $x, y: $y, color: $color) {
+      userId
+      x
+      y
+      color
+      placedAt
+    }
   }
 `;
