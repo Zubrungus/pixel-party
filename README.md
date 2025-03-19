@@ -45,10 +45,15 @@ After a user signs up or logs in with their username and password, they may choo
 Users can zoom the canvas in and out and drag it where they want to on the screen. The toggle grid button displays the canvas grid for precision placing.
 
 ## Collaborators
-
+### Main Contributors
 Nick Bappe - [GitHub](https://github.com/Zubrungus) /
 Anthony Schwab - [GitHub](https://github.com/ant-codes-42) /
 Jay Bhatt - [GitHub](https://github.com/rasersharpe)
+
+### Additional help
+Hari Edwin for advice on which colors to use for our color palette.  
+Our intructor, Rachel Thiim, for helping us solve network issues.  
+[This excellent writeup](https://redditinc.com/blog/how-we-built-rplace) on how r/place was created was used a guide for the front-end.  
 
 ## License
 
