@@ -49,7 +49,7 @@
 
 .pixelCanvasMagnifier {
   transform: scale(5);
-  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -pixelated;
   position: absolute;
   left: 200px;
   top: 200px;
@@ -114,6 +114,7 @@ canvas,
   color: black;
   position: fixed;
   display: flex;
+  flex-wrap: wrap;
   align-content: space-around;
   justify-content: space-around;
   height: 40%;
@@ -131,6 +132,7 @@ canvas,
   border-radius: 50%;
   width: 90%;
   height: 45%;
+  font-size: 500%;
 }
 
 #toggleButton {

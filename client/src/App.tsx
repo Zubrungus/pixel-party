@@ -60,18 +60,20 @@ function App() {
   const [clickY, setClickY] = useState(-1);
   const [clickedColor, setClickedColor] = useState(1);
   const [gridToggle, setGridToggle] = useState(false);
-const [scaleLevel, setScaleLevel] = useState(1);
-//will be used for dragging functionality
-/*const [mouseDownX, setMouseDownX] = useState(0);
-const [mouseDownY, setMouseDownY] = useState(0);*/
+  const [scaleLevel, setScaleLevel] = useState(1);
+  const [mouseDown, setMouseDown] = useState(false);
+  const [mouseDownX, setMouseDownX] = useState(0);
+  const [mouseDownY, setMouseDownY] = useState(0);
+  const [offsetX, setOffestX] = useState(0);
+  const [offsetY, setOffestY] = useState(0);
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
   const { loading, error, data } = useQuery(GET_ALL_PIXELS);
-  
+
   // Mutation to create a pixel
   //const [createPixel] = useMutation(CREATE_PIXEL);
-  
+
   // Subscription to pixel updates
   useSubscription(PIXEL_UPDATED, {
     onData: ({ data }) => {
@@ -85,7 +87,7 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
   useEffect(() => {
     if (data?.getAllPixels) {
       const newImageData = new Uint8ClampedArray(40000).fill(255);
-      
+
       // Set default canvas to white
       data.getAllPixels.forEach((_pixel: Pixel, i: number) => {
         newImageData[i] = 255;     // R
@@ -93,12 +95,12 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
         newImageData[i + 2] = 255; // B
         newImageData[i + 3] = 255; // A
       })
-      
+
       // Apply pixels from database
       data.getAllPixels.forEach((pixel: Pixel) => {
         applyPixelToImageData(newImageData, pixel);
       });
-      
+
       setImageData(newImageData);
     }
   }, [data]);
@@ -107,11 +109,11 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
   const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: Pixel) => {
     const index = (pixel.y * 100 + pixel.x) * 4;
     const colorHex = pixel.color.startsWith('#') ? pixel.color : `#${pixel.color}`;
-    
+
     const r = parseInt(colorHex.substring(1, 3), 16);
     const g = parseInt(colorHex.substring(3, 5), 16);
     const b = parseInt(colorHex.substring(5, 7), 16);
-    
+
     imgData[index] = r;     // R
     imgData[index + 1] = g; // G
     imgData[index + 2] = b; // B
@@ -132,11 +134,31 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
 
   function handleClickY(pos: number) {
     setClickY(Math.floor((pos / 5) / scaleLevel));
-    
+
   }
 
   function handleClickedColor(color: number) {
     setClickedColor(color);
+  }
+
+  function handleMouseDown(event: React.MouseEvent) {
+    setMouseDown(true);
+    setMouseDownX(event.clientX);
+    setMouseDownY(event.clientY);
+  }
+
+  function handleMouseUp() {
+    setMouseDown(false);
+  }
+
+  function handleMouseMove(event: React.MouseEvent) {
+    if(mouseDown){
+      setOffestX(offsetX - (mouseDownX - event.clientX));
+      setOffestY(offsetY - (mouseDownY - event.clientY));
+
+      setMouseDownX(event.clientX);
+      setMouseDownY(event.clientY);
+    }
   }
 
   function handleConfirm() {
@@ -147,16 +169,16 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
     }
   }
 
-  function handleToggleGrid(){
+  function handleToggleGrid() {
     setGridToggle(!gridToggle);
   }
 
-  function handleZoomIncrease(){
+  function handleZoomIncrease() {
     setScaleLevel(scaleLevel + 1)
   }
 
-  function handleZoomDecrease(){
-    if(scaleLevel >= 2){
+  function handleZoomDecrease() {
+    if (scaleLevel >= 2) {
       setScaleLevel(scaleLevel - 1);
     }
   }
@@ -180,12 +202,13 @@ const [mouseDownY, setMouseDownY] = useState(0);*/
     <>
       <Header />
 
-      <div id="canvasWrapper" style={{transform: `${scaleLevel}`, imageRendering: `-webkit-optimize-contrast`}} >
-        <div className="canvas pixelCanvasMagnifier" >
-          <Canvas height={100} width={100} imageData={imageData} />
+      <div id="draggableWrapper" style={{transform: `translate(${offsetX}px, ${offsetY}px)`}} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
+        <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
+          <div className="canvas pixelCanvasMagnifier" >
+            <Canvas height={100} width={100} imageData={imageData} />
+          </div>
+          <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
         </div>
-
-        <CanvasOverlay height={500} width={500} updateClickX={handleClickX} updateClickY={handleClickY} lastClickX={clickX} lastClickY={clickY} gridToggle={gridToggle} />
       </div>
 
       <ColorSelector clickedColorHandler={handleClickedColor} clickedColor={clickedColor} />
