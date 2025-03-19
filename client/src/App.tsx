@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useSubscription, gql } from '@apollo/client'
+import { useQuery, useMutation, useSubscription, gql } from '@apollo/client'
 import './index.css'
 import { Canvas } from './canvas/canvas'
 import { CanvasOverlay } from './canvas/canvasOverlay';
@@ -21,7 +21,7 @@ const GET_ALL_PIXELS = gql`
   }
 `;
 
-/* const CREATE_PIXEL = gql`
+const CREATE_PIXEL = gql`
   mutation CreatePixel($x: Int!, $y: Int!, $color: String!) {
     createPixel(x: $x, y: $y, color: $color) {
       userId
@@ -31,7 +31,7 @@ const GET_ALL_PIXELS = gql`
       placedAt
     }
   }
-`; */
+`;
 
 // GraphQL subscription
 const PIXEL_UPDATED = gql`
@@ -55,24 +55,29 @@ interface Pixel {
 }
 
 function App() {
-  //Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
+  // Variable and setter for the last click position on the canvas. Defaults to -1 if no click has yet occurred
   const [clickX, setClickX] = useState(-1);
   const [clickY, setClickY] = useState(-1);
+  // Last clicked color, stored as a number from 1 to 16
   const [clickedColor, setClickedColor] = useState(1);
+  // Boolean for whether to display the grid or not
   const [gridToggle, setGridToggle] = useState(false);
+  // Current zoom level, cannot go below 1
   const [scaleLevel, setScaleLevel] = useState(1);
+  // State values for dragging the canvas
   const [mouseDown, setMouseDown] = useState(false);
   const [mouseDownX, setMouseDownX] = useState(0);
   const [mouseDownY, setMouseDownY] = useState(0);
   const [offsetX, setOffestX] = useState(0);
   const [offsetY, setOffestY] = useState(0);
+  // Current state of imageData, which is the 100 by 100 grid of pixels
   const [imageData, setImageData] = useState(new Uint8ClampedArray(40000).fill(255)); // Initialize with transparent pixels
 
   // Query to get all pixels
   const { loading, error, data } = useQuery(GET_ALL_PIXELS);
 
   // Mutation to create a pixel
-  //const [createPixel] = useMutation(CREATE_PIXEL);
+  const [createPixel] = useMutation(CREATE_PIXEL);
 
   // Subscription to pixel updates
   useSubscription(PIXEL_UPDATED, {
@@ -108,59 +113,59 @@ function App() {
   // Helper function to apply a pixel to the imageData
   const applyPixelToImageData = (imgData: Uint8ClampedArray, pixel: Pixel) => {
     const index = (pixel.y * 100 + pixel.x) * 4;
-    
+
     let r: number = 255, g: number = 255, b: number = 255;
 
-    switch(pixel.color){
+    switch (pixel.color) {
       case "1":
-        r= 179; g= 41; b= 41;
+        r = 179; g = 41; b = 41;
         break;
       case "2":
-        r= 67; g= 56; b= 214;
+        r = 67; g = 56; b = 214;
         break;
       case "3":
-        r= 223; g= 119; b= 22;
+        r = 223; g = 119; b = 22;
         break;
       case "4":
-        r= 56; g= 129; b= 224;
+        r = 56; g = 129; b = 224;
         break;
       case "5":
-        r= 232; g= 204; b= 23;
+        r = 232; g = 204; b = 23;
         break;
       case "6":
-        r= 117; g= 225; b= 225;
+        r = 117; g = 225; b = 225;
         break;
       case "7":
-        r= 37; g= 131; b= 40;
+        r = 37; g = 131; b = 40;
         break;
       case "8":
-        r= 101; g= 199; b= 56;
+        r = 101; g = 199; b = 56;
         break;
       case "9":
-        r= 213; g= 77; b= 177;
+        r = 213; g = 77; b = 177;
         break;
       case "10":
-        r= 211; g= 150; b= 175;
+        r = 211; g = 150; b = 175;
         break;
       case "11":
-        r= 120; g= 86; b= 59;
+        r = 120; g = 86; b = 59;
         break;
       case "12":
-        r= 179; g= 136; b= 101;
+        r = 179; g = 136; b = 101;
         break;
       case "13":
-        r= 89; g= 89; b= 89;
+        r = 89; g = 89; b = 89;
         break;
       case "14":
-        r= 147; g= 147; b= 154;
+        r = 147; g = 147; b = 154;
         break;
       case "15":
-        r= 0; g= 0; b= 0;
+        r = 0; g = 0; b = 0;
         break;
       case "16":
-        r= 255; g= 255; b= 255;
+        r = 255; g = 255; b = 255;
         break;
-      
+
     }
 
     imgData[index] = r;     // R
@@ -201,7 +206,7 @@ function App() {
   }
 
   function handleMouseMove(event: React.MouseEvent) {
-    if(mouseDown){
+    if (mouseDown) {
       setOffestX(offsetX - (mouseDownX - event.clientX));
       setOffestY(offsetY - (mouseDownY - event.clientY));
 
@@ -213,7 +218,9 @@ function App() {
   function handleConfirm() {
     //Make sure that X and Y are not their default values
     if (clickX >= 0 && clickY >= 0) {
-      //This is where the network request will go!
+      createPixel({
+        variables: { x: clickX, y:  clickY, color: clickedColor.toString() }
+      }).catch(err => console.error("Error placing pixel:", err));
       console.log(`X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`)
     }
   }
@@ -232,15 +239,6 @@ function App() {
     }
   }
 
-  // Handle placing a pixel via GraphQL mutation
-  // Removed until needed to make GraphQL mutation
-  // Logic to be pulled and used within confirmation button
-  /*const handlePlacePixel = (x: number, y: number) => {
-    createPixel({
-      variables: { x, y, color: clickedColor }
-    }).catch(err => console.error("Error placing pixel:", err));
-  };*/
-
   if (loading) return <p>Loading canvas...</p>;
   if (error) return <p>Error loading canvas: {error.message}</p>;
 
@@ -251,7 +249,7 @@ function App() {
     <>
       <Header />
 
-      <div id="draggableWrapper" style={{transform: `translate(${offsetX}px, ${offsetY}px)`}} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
+      <div id="draggableWrapper" style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onMouseMove={handleMouseMove} >
         <div id="canvasWrapper" style={{ transform: ` scale(${scaleLevel})`, imageRendering: `pixelated` }} >
           <div className="canvas pixelCanvasMagnifier" >
             <Canvas height={100} width={100} imageData={imageData} />
