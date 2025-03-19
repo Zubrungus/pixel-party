@@ -4,12 +4,12 @@ import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
-  split,
+  // split,
   HttpLink,
 } from "@apollo/client";
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { getMainDefinition } from "@apollo/client/utilities";
-import { createClient } from "graphql-ws";
+// import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+// import { getMainDefinition } from "@apollo/client/utilities";
+// import { createClient } from "graphql-ws";
 import { setContext } from "@apollo/client/link/context";
 import "./index.css";
 import App from "./App.tsx";
@@ -30,11 +30,11 @@ const authLink = setContext((_, { headers }) => {
 });
 
 // Create a WebSocket link for subscriptions
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: "ws://localhost:3000/graphql",
-  })
-);
+// const wsLink = new GraphQLWsLink(
+//   createClient({
+//     url: "ws://localhost:3000/graphql",
+//   })
+// );
 
 // Use split to route requests based on operation type
 // const splitLink = split(
