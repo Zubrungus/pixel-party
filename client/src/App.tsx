@@ -77,7 +77,9 @@ function App() {
   ); // Initialize with transparent pixels
 
   // Query to get all pixels
-  const { loading, error, data } = useQuery(GET_ALL_PIXELS);
+  const { loading, error, data } = useQuery(GET_ALL_PIXELS, {
+    pollInterval: 10000,
+  });
 
   // Mutation to create a pixel
   const [createPixel] = useMutation(CREATE_PIXEL);
@@ -268,7 +270,7 @@ function App() {
     //Make sure that X and Y are not their default values
     if (clickX >= 0 && clickY >= 0 && user) {
       console.log(`Placing pixel: X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
-      
+
       // Optimistically update the UI immediately
       const optimisticPixel: Pixel = {
         userId: user.userId,
@@ -277,10 +279,10 @@ function App() {
         color: clickedColor.toString(),
         placedAt: new Date().toISOString()
       };
-      
+
       // Update the canvas immediately, don't wait for subscription
       updateCanvasWithPixel(optimisticPixel);
-      
+
       createPixel({
         variables: { x: clickX, y: clickY, color: clickedColor.toString() },
       })
