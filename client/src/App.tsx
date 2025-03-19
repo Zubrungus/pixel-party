@@ -218,6 +218,7 @@ function App() {
 
   function handleConfirm() {
     const user = getUser();
+    console.log('This is the user:', user);
     //Make sure that X and Y are not their default values
     if (clickX >= 0 && clickY >= 0 && user) {
       createPixel({
