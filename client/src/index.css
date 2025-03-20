@@ -18,6 +18,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+html,
+body {
+  overscroll-behavior-y: contain;
+}
 
 /* Modal overlay that covers the entire screen */
 .modal-overlay {
@@ -311,21 +315,6 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
 }
 
 @media screen and (max-width: 768px) {
