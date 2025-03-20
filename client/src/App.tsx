@@ -250,6 +250,12 @@ function App() {
     setMouseDownY(event.clientY);
   }
 
+  function handleTouchDown(event: React.TouchEvent){
+    setMouseDown(true);
+    setMouseDownX(event.touches[0].pageX);
+    setMouseDownY(event.touches[0].pageY);
+  }
+
   function handleMouseUp() {
     setMouseDown(false);
   }
@@ -261,6 +267,15 @@ function App() {
 
       setMouseDownX(event.clientX);
       setMouseDownY(event.clientY);
+    }
+  }
+
+  function handleTouchMove(event: React.TouchEvent){
+    if(mouseDown) {
+      setOffestX(offsetX - (mouseDownX - event.touches[0].pageX));
+      setOffestY(offsetY - (mouseDownY - event.touches[0].pageY));
+      setMouseDownX(event.touches[0].pageX);
+      setMouseDownY(event.touches[0].pageY);
     }
   }
 
@@ -338,6 +353,9 @@ function App() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchDown}
+          onTouchEnd={handleMouseUp}
+          onTouchMove={handleTouchMove}
         >
           <div
             id="canvasWrapper"
