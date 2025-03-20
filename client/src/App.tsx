@@ -9,6 +9,7 @@ import { ToggleGrid } from "./components/ToggleGrid";
 import Header from "./components/Header";
 import { ZoomButtons } from "./components/ZoomButtons";
 import { getUser } from "./utils/auth";
+
 // GraphQL queries and mutations
 const GET_ALL_PIXELS = gql`
   query GetAllPixels {
@@ -75,6 +76,9 @@ function App() {
   const [imageData, setImageData] = useState(
     new Uint8ClampedArray(40000).fill(255)
   ); // Initialize with transparent pixels
+  // State for cooldown
+  const [cooldown, setCooldown] = useState(false);
+  const [remainingCooldownTime, setRemainingCooldownTime] = useState(0);
 
   // Query to get all pixels
   const { loading, error, data } = useQuery(GET_ALL_PIXELS, {
@@ -88,13 +92,16 @@ function App() {
   useSubscription(PIXEL_UPDATED, {
     onData: ({ data }) => {
       if (data?.data?.pixelUpdated) {
-        console.log('Received pixel update via subscription:', data.data.pixelUpdated);
+        console.log(
+          "Received pixel update via subscription:",
+          data.data.pixelUpdated
+        );
         updateCanvasWithPixel(data.data.pixelUpdated);
       }
     },
     onError: (error) => {
-      console.error('Subscription error:', error);
-    }
+      console.error("Subscription error:", error);
+    },
   });
 
   // Update canvas with initial pixels when data is loaded
@@ -218,7 +225,7 @@ function App() {
 
   // Function to update canvas with a newly placed pixel
   const updateCanvasWithPixel = (pixel: Pixel) => {
-    console.log('Updating canvas with pixel:', pixel);
+    console.log("Updating canvas with pixel:", pixel);
     // Create a proper copy of the current imageData
     const newImageData = new Uint8ClampedArray(40000);
     // Copy all existing data
@@ -250,7 +257,7 @@ function App() {
     setMouseDownY(event.clientY);
   }
 
-  function handleTouchDown(event: React.TouchEvent){
+  function handleTouchDown(event: React.TouchEvent) {
     setMouseDown(true);
     setMouseDownX(event.touches[0].pageX);
     setMouseDownY(event.touches[0].pageY);
@@ -270,8 +277,8 @@ function App() {
     }
   }
 
-  function handleTouchMove(event: React.TouchEvent){
-    if(mouseDown) {
+  function handleTouchMove(event: React.TouchEvent) {
+    if (mouseDown) {
       setOffestX(offsetX - (mouseDownX - event.touches[0].pageX));
       setOffestY(offsetY - (mouseDownY - event.touches[0].pageY));
       setMouseDownX(event.touches[0].pageX);
@@ -281,10 +288,19 @@ function App() {
 
   function handleConfirm() {
     const user = getUser();
-    console.log('This is the user:', user);
-    //Make sure that X and Y are not their default values
+    console.log("This is the user:", user);
+
+    // Check if cooldown is active
+    if (cooldown) {
+      console.log("Cooldown is active. Please wait.");
+      return;
+    }
+
+    // Make sure that X and Y are not their default values
     if (clickX >= 0 && clickY >= 0 && user) {
-      console.log(`Placing pixel: X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`);
+      console.log(
+        `Placing pixel: X: ${clickX}, Y: ${clickY}, Color: ${clickedColor}`
+      );
 
       // Optimistically update the UI immediately
       const optimisticPixel: Pixel = {
@@ -292,7 +308,7 @@ function App() {
         x: clickX,
         y: clickY,
         color: clickedColor.toString(),
-        placedAt: new Date().toISOString()
+        placedAt: new Date().toISOString(),
       };
 
       // Update the canvas immediately, don't wait for subscription
@@ -306,6 +322,23 @@ function App() {
           // Reset click position after successful pixel placement
           setClickX(-1);
           setClickY(-1);
+
+          // Start 10-second cooldown
+          console.log("Cooldown started: 10 seconds");
+          setCooldown(true);
+          setRemainingCooldownTime(10);
+
+          let remainingTime = 10;
+          const intervalId = setInterval(() => {
+            remainingTime -= 1;
+            setRemainingCooldownTime(remainingTime);
+            console.log(`Cooldown: ${remainingTime} seconds remaining`);
+            if (remainingTime <= 0) {
+              clearInterval(intervalId);
+              console.log("Cooldown ended");
+              setCooldown(false);
+            }
+          }, 1000);
         })
         .catch((err) => {
           console.error("Error placing pixel:", err);
@@ -341,7 +374,7 @@ function App() {
   // The CanvasOverlay component draws the grid and the halo around the last clicked pixel
   return (
     <>
-      <Header />
+      <Header remainingCooldownTime={remainingCooldownTime} />
 
       <div style={{ marginTop: "80px" }}>
         {" "}
